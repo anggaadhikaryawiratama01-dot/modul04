@@ -4,7 +4,7 @@
 
 <div class="d-flex justify-content-between mb-3">
     <h3>Data Category</h3>
-    <a href="{{ route('categories.create') }}" class="btn btn-primary">+ Tambah</a>
+    <a href="{{ route('category.create') }}" class="btn btn-primary">+ Tambah</a>
 </div>
 
 @if(session('success'))
@@ -13,48 +13,44 @@
 </div>
 @endif
 
+<div class="card">
+<div class="card-body">
+
 <table class="table table-bordered">
-    <thead class="table-dark">
+    <thead>
         <tr>
             <th>No</th>
             <th>Nama Kategori</th>
-            <th>Jumlah Buku</th>
-            <th width="150">Aksi</th>
+            <th width="200">Aksi</th>
         </tr>
     </thead>
     <tbody>
-        @forelse($categories as $key => $category)
+        @foreach($categories as $category)
         <tr>
-            <td>{{ $key + 1 }}</td>
+            <td>{{ $loop->iteration }}</td>
             <td>{{ $category->nama_kategori }}</td>
             <td>
-                <span class="badge bg-info">
-                    {{ $category->books_count }}
-                </span>
-            </td>
-            <td>
-                <a href="{{ route('categories.edit',$category->id) }}"
-                   class="btn btn-warning btn-sm">Edit</a>
+                <a href="{{ route('category.show', $category->id) }}" class="btn btn-info btn-sm">Detail</a>
 
-                <form action="{{ route('categories.destroy',$category->id) }}"
-                      method="POST" class="d-inline">
+                <a href="{{ route('category.edit', $category->id) }}" class="btn btn-warning btn-sm">Edit</a>
+
+                <form action="{{ route('category.destroy', $category->id) }}"
+                      method="POST"
+                      class="d-inline">
                     @csrf
                     @method('DELETE')
                     <button class="btn btn-danger btn-sm"
-                        onclick="return confirm('Yakin hapus data?')">
+                        onclick="return confirm('Yakin hapus?')">
                         Hapus
                     </button>
                 </form>
             </td>
         </tr>
-        @empty
-        <tr>
-            <td colspan="4" class="text-center">
-                Data kosong
-            </td>
-        </tr>
-        @endforelse
+        @endforeach
     </tbody>
 </table>
+
+</div>
+</div>
 
 @endsection

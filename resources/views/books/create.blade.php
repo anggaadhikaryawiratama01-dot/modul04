@@ -17,6 +17,7 @@
 
     <button class="btn btn-success">Simpan</button>
     <a href="{{ route('categories.index') }}" class="btn btn-secondary">Kembali</a>
+
 </form>
 
 </div>
