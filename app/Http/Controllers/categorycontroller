@@ -9,8 +9,8 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::withCount('books')->get();
-        return view('categories.index', compact('categories'));
+        $categories = \App\Models\Category::all();
+    return view('categories.index', compact('categories'));
     }
 
     public function create()
