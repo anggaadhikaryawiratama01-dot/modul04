@@ -13,15 +13,15 @@ class CategorySeeder extends Seeder
         Category::insert([
             [
                 'nama_kategori' => 'Teknologi',
-                'deskripsi' => 'Buku yang membahas teknologi dan pemrograman'
+
             ],
             [
                 'nama_kategori' => 'Sains',
-                'deskripsi' => 'Buku yang membahas ilmu pengetahuan dan sains'
+
             ],
             [
                 'nama_kategori' => 'Sastra',
-                'deskripsi' => 'Buku novel, puisi, dan karya sastra'
+               
             ],
         ]);
     }
