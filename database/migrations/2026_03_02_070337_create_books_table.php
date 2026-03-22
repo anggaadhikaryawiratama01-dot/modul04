@@ -20,6 +20,7 @@ return new class extends Migration
         $table->integer('tahun_terbit'); // Sesuai validasi di controller [cite: 42]
         $table->integer('stok');      // Sesuai validasi di controller [cite: 43]
         $table->timestamps();
+        $table->string('cover')->nullable(); // Menghasilkan kolom untuk menyimpan nama file gambar [cite: 12]
     });
 }
 

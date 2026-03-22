@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Book;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage; // Tambahkan ini untuk mengelola file
 
 class BookController extends Controller
 {
@@ -42,9 +43,17 @@ class BookController extends Controller
             'penulis' => 'required|string',
             'tahun_terbit' => 'required|numeric',
             'stok' => 'required|numeric',
+            'cover' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // Validasi cover
         ]);
 
-        Book::create($request->only(['category_id','judul','penulis','tahun_terbit','stok']));
+        $data = $request->only(['category_id', 'judul', 'penulis', 'tahun_terbit', 'stok']);
+
+        // Logika Upload Cover
+        if ($request->hasFile('cover')) {
+            $data['cover'] = $request->file('cover')->store('covers', 'public');
+        }
+
+        Book::create($data);
 
         return redirect()->route('books.index')->with('success', 'Data berhasil ditambahkan');
     }
@@ -63,15 +72,33 @@ class BookController extends Controller
             'penulis' => 'required|string',
             'tahun_terbit' => 'required|numeric',
             'stok' => 'required|numeric',
+            'cover' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // Validasi cover
         ]);
 
-        $book->update($request->only(['category_id','judul','penulis','tahun_terbit','stok']));
+        $data = $request->only(['category_id', 'judul', 'penulis', 'tahun_terbit', 'stok']);
+
+        // Logika Update Cover
+        if ($request->hasFile('cover')) {
+            // Hapus cover lama jika ada
+            if ($book->cover) {
+                Storage::disk('public')->delete($book->cover);
+            }
+            // Simpan cover baru
+            $data['cover'] = $request->file('cover')->store('covers', 'public');
+        }
+
+        $book->update($data);
 
         return redirect()->route('books.index')->with('success', 'Data berhasil diupdate');
     }
 
     public function destroy(Book $book)
     {
+        // Hapus file cover dari storage saat data dihapus
+        if ($book->cover) {
+            Storage::disk('public')->delete($book->cover);
+        }
+
         $book->delete();
         return redirect()->route('books.index')->with('success', 'Data berhasil dihapus');
     }

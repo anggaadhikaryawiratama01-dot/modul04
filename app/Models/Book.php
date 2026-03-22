@@ -12,6 +12,7 @@ class Book extends Model
         'penulis',
         'tahun_terbit',
         'stok',
+        'cover', // Tambahkan ini untuk mengizinkan penyimpanan nama file gambar
     ];
 
     public function category()
