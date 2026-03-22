@@ -28,16 +28,17 @@ class CategoryController extends Controller
     /**
      * Menyimpan kategori baru ke database.
      */
-    public function store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-        ]);
+   public function store(Request $request)
+{
+    $request->validate([
+        'nama_kategori' => 'required|string|max:255',
+    ]);
 
-        Category::create($request->only('name'));
+    // Ini akan mengambil 'nama_kategori' dari form dan menyimpannya
+    Category::create($request->only('nama_kategori'));
 
-        return redirect()->route('categories.index')->with('success', 'Kategori berhasil ditambahkan!');
-    }
+    return redirect()->route('categories.index')->with('success', 'Kategori berhasil ditambahkan!');
+}
 
     /**
      * Menampilkan form edit.
