@@ -11,10 +11,21 @@ use App\Models\Book;
 |--------------------------------------------------------------------------
 */
 
+/**
+ * Route Halaman Utama (Landing Page)
+ * Mengambil data buku beserta kategorinya untuk ditampilkan di home.blade.php
+ */
 Route::get('/', function () {
-    $books = Book::latest()->get(); // ambil data buku
-    return view('home', compact('books')); // kirim ke home.blade.php
+    // Eager loading 'category' agar tidak error saat memanggil $book->category->name
+    $books = Book::with('category')->latest()->get();
+
+    // Mengarahkan ke file resources/views/layouts/home.blade.php
+    return view('layouts.home', compact('books'));
 });
 
+/**
+ * Route Resource untuk CRUD Buku dan Kategori
+ * Menggunakan BookController dan CategoryController
+ */
 Route::resource('books', BookController::class);
 Route::resource('categories', CategoryController::class);

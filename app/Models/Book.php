@@ -9,13 +9,14 @@ class Book extends Model
 {
     use HasFactory;
 
+    // Tambahkan baris ini agar data bisa disimpan
     protected $fillable = [
         'category_id',
         'judul',
         'penulis',
         'tahun_terbit',
         'stok',
-        'cover' // ✅ tambahin ini
+        'cover'
     ];
 
     public function category()
