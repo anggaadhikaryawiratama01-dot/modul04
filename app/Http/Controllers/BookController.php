@@ -5,28 +5,41 @@ namespace App\Http\Controllers;
 use App\Models\Book;
 use App\Models\Category;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage; // Tambahkan ini untuk mengelola file
+use Illuminate\Support\Facades\File; // Tambahkan ini untuk manajemen file
 
 class BookController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Book::query()->with('category');
+        $query = Book::with('category');
 
-        if ($request->filled('search')) {
-            $query->where('judul', 'like', "%{$request->search}%");
+        // SEARCH JUDUL
+        if ($request->judul) {
+            $query->where('judul', 'like', '%' . $request->judul . '%');
         }
 
-        if ($request->filled('category_id')) {
+        // FILTER CATEGORY
+        if ($request->category_id) {
             $query->where('category_id', $request->category_id);
         }
 
-        $books = $query->paginate(10)->withQueryString();
+        $books = $query->get();
 
-        $totalBooks = Book::count();
-        $categories = Category::withCount('books')->get();
+        // TOTAL SEMUA BOOK
+        $totalBooks = $books->count();
 
-        return view('books.index', compact('books', 'categories', 'totalBooks'));
+        $categories = Category::all();
+
+        $totalPerCategory = Book::selectRaw('category_id, count(*) as total')
+            ->groupBy('category_id')
+            ->pluck('total', 'category_id');
+
+        return view('books.index', compact(
+            'books',
+            'categories',
+            'totalBooks',
+            'totalPerCategory'
+        ));
     }
 
     public function create()
@@ -39,23 +52,27 @@ class BookController extends Controller
     {
         $request->validate([
             'category_id' => 'required|numeric',
-            'judul' => 'required|string',
-            'penulis' => 'required|string',
+            'judul' => 'required',
+            'penulis' => 'required',
             'tahun_terbit' => 'required|numeric',
             'stok' => 'required|numeric',
-            'cover' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // Validasi cover
+            'cover' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
         ]);
 
-        $data = $request->only(['category_id', 'judul', 'penulis', 'tahun_terbit', 'stok']);
+        $data = $request->all();
 
-        // Logika Upload Cover
+        // Upload cover
         if ($request->hasFile('cover')) {
-            $data['cover'] = $request->file('cover')->store('covers', 'public');
+            $file = $request->file('cover');
+            $namaFile = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('cover'), $namaFile);
+            $data['cover'] = $namaFile;
         }
 
         Book::create($data);
 
-        return redirect()->route('books.index')->with('success', 'Data berhasil ditambahkan');
+        return redirect()->route('books.index')
+            ->with('success', 'Data buku berhasil ditambahkan!');
     }
 
     public function edit(Book $book)
@@ -67,39 +84,45 @@ class BookController extends Controller
     public function update(Request $request, Book $book)
     {
         $request->validate([
-            'category_id' => 'required|numeric|exists:categories,id',
-            'judul' => 'required|string',
-            'penulis' => 'required|string',
+            'category_id' => 'required|numeric',
+            'judul' => 'required',
+            'penulis' => 'required',
             'tahun_terbit' => 'required|numeric',
             'stok' => 'required|numeric',
-            'cover' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // Validasi cover
+            'cover' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
         ]);
 
-        $data = $request->only(['category_id', 'judul', 'penulis', 'tahun_terbit', 'stok']);
+        $data = $request->all();
 
-        // Logika Update Cover
+        // Kalau ada upload cover baru
         if ($request->hasFile('cover')) {
             // Hapus cover lama jika ada
-            if ($book->cover) {
-                Storage::disk('public')->delete($book->cover);
+            if ($book->cover && File::exists(public_path('cover/' . $book->cover))) {
+                File::delete(public_path('cover/' . $book->cover));
             }
-            // Simpan cover baru
-            $data['cover'] = $request->file('cover')->store('covers', 'public');
+
+            $file = $request->file('cover');
+            $namaFile = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('cover'), $namaFile);
+            $data['cover'] = $namaFile;
         }
 
         $book->update($data);
 
-        return redirect()->route('books.index')->with('success', 'Data berhasil diupdate');
+        return redirect()->route('books.index')
+            ->with('success', 'Data buku berhasil diupdate!');
     }
 
     public function destroy(Book $book)
     {
-        // Hapus file cover dari storage saat data dihapus
-        if ($book->cover) {
-            Storage::disk('public')->delete($book->cover);
+        // Hapus file cover dari folder sebelum menghapus data di DB
+        if ($book->cover && File::exists(public_path('cover/' . $book->cover))) {
+            File::delete(public_path('cover/' . $book->cover));
         }
 
         $book->delete();
-        return redirect()->route('books.index')->with('success', 'Data berhasil dihapus');
+
+        return redirect()->route('books.index')
+            ->with('success', 'Data buku berhasil dihapus!');
     }
 }

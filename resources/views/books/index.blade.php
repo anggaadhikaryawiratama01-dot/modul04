@@ -1,98 +1,119 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mx-auto px-4 py-6">
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-gray-800">Data Book</h2>
-        <a href="{{ route('books.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-300">
-            + Tambah Book
-        </a>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Data Book</h3>
+    <a href="{{ route('books.create') }}" class="btn btn-primary">+ Tambah</a>
+</div>
+
+@if(session('success'))
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    {{ session('success') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+@endif
+
+<div class="row mb-3">
+    {{-- TOTAL DATA --}}
+    <div class="col-md-4">
+        <div class="alert alert-info h-100 mb-0">
+            Total Data Book: <strong>{{ $totalBooks }}</strong>
+        </div>
     </div>
 
-    @if(session('success'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-            {{ session('success') }} [cite: 50]
+    {{-- TOTAL PER CATEGORY --}}
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body py-2">
+                <h6 class="card-title mb-1">Total Book per Category:</h6>
+                <div class="d-flex flex-wrap gap-3">
+                    @foreach($categories as $category)
+                        <span class="badge bg-light text-dark border">
+                            {{ $category->nama_kategori }}:
+                            <strong>{{ $totalPerCategory[$category->id] ?? 0 }}</strong>
+                        </span>
+                    @endforeach
+                </div>
+            </div>
         </div>
-    @endif
-
-    <div class="bg-white p-5 rounded-xl shadow-sm mb-6 border border-gray-200">
-        <p class="font-bold text-gray-700 mb-2">Total Data Book: <span class="text-blue-600">{{ $totalBooks }}</span> [cite: 51]</p>
-        <p class="font-bold text-sm text-gray-600 mb-2">Total Book per Category: [cite: 52]</p>
-        <ul class="list-disc ml-6 text-sm text-gray-700 space-y-1">
-            @foreach($categories as $category)
-                <li><span class="font-medium">{{ $category->name }}</span> : {{ $category->books_count }}</li> [cite: 53, 54, 55, 56]
-            @endforeach
-        </ul>
     </div>
+</div>
 
-    <form action="{{ route('books.index') }}" method="GET" class="flex flex-wrap gap-3 mb-6 items-center">
-        <input type="text" name="search" placeholder="Cari Judul..." [cite: 57]
-               class="border border-gray-300 rounded-lg px-4 py-2 w-full max-w-xs focus:ring-2 focus:ring-blue-500 outline-none"
-               value="{{ request('search') }}">
+{{-- FORM SEARCH & FILTER --}}
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="GET" action="{{ route('books.index') }}" class="row g-2">
+            <div class="col-md-5">
+                <input type="text" name="judul" class="form-control"
+                       placeholder="Cari Judul..."
+                       value="{{ request('judul') }}">
+            </div>
+            <div class="col-md-4">
+                <select name="category_id" class="form-select">
+                    <option value="">-- Semua Kategori --</option>
+                    @foreach($categories as $category)
+                        <option value="{{ $category->id }}"
+                            {{ request('category_id') == $category->id ? 'selected' : '' }}>
+                            {{ $category->nama_kategori }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-1">
+                <button class="btn btn-primary w-100">Filter</button>
+                <a href="{{ route('books.index') }}" class="btn btn-secondary w-100">Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
 
-        <select name="category_id" class="border border-gray-300 rounded-lg px-4 py-2 bg-white focus:ring-2 focus:ring-blue-500 outline-none">
-            <option value="">-- Semua Kategori --</option> [cite: 58]
-            @foreach($categories as $cat)
-                <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>
-                    {{ $cat->name }}
-                </option>
-            @endforeach
-        </select>
-
-        <div class="flex gap-2">
-            <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white px-6 py-2 rounded-lg font-medium transition">
-                Filter [cite: 59]
-            </button>
-            <a href="{{ route('books.index') }}" class="bg-gray-900 hover:bg-black text-white px-6 py-2 rounded-lg font-medium transition text-center">
-                Reset [cite: 60]
-            </a>
-        </div>
-    </form>
-
-    <div class="overflow-hidden rounded-xl shadow-md border border-gray-200">
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr class="bg-black text-white italic">
-                    <th class="p-4 border-b border-gray-700 font-semibold uppercase text-sm">No</th> [cite: 61]
-                    <th class="p-4 border-b border-gray-700 font-semibold uppercase text-sm text-center">Cover</th> [cite: 12, 62]
-                    <th class="p-4 border-b border-gray-700 font-semibold uppercase text-sm">Judul</th> [cite: 63]
-                    <th class="p-4 border-b border-gray-700 font-semibold uppercase text-sm">Penulis</th> [cite: 64]
-                    <th class="p-4 border-b border-gray-700 font-semibold uppercase text-sm text-center">Tahun</th> [cite: 65]
-                    <th class="p-4 border-b border-gray-700 font-semibold uppercase text-sm text-center">Stok</th> [cite: 66]
-                    <th class="p-4 border-b border-gray-700 font-semibold uppercase text-sm text-center">Aksi</th> [cite: 67]
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover table-bordered mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th class="text-center" width="50">No</th>
+                    <th class="text-center" width="100">Cover</th>
+                    <th>Judul</th>
+                    <th>Penulis</th>
+                    <th class="text-center">Tahun</th>
+                    <th class="text-center">Stok</th>
+                    <th class="text-center" width="160">Aksi</th>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-100">
-                @forelse($books as $index => $book)
-                <tr class="hover:bg-gray-50 transition duration-150">
-                    <td class="p-4 text-gray-700">{{ $index + $books->firstItem() }}</td>
-                    <td class="p-4">
+            <tbody class="align-middle">
+                @forelse($books as $key => $book)
+                <tr>
+                    <td class="text-center">{{ $key + 1 }}</td>
+                    <td class="text-center">
                         @if($book->cover)
-                            <img src="{{ asset('storage/' . $book->cover) }}" alt="Cover" class="w-16 h-20 object-cover rounded shadow-sm border border-gray-100 mx-auto">
+                            <img src="{{ asset('cover/'.$book->cover) }}"
+                                 width="60"
+                                 class="rounded shadow-sm"
+                                 style="height:80px; object-fit:cover;">
                         @else
-                            <div class="w-16 h-20 bg-gray-100 rounded flex items-center justify-center text-[10px] text-gray-400 border border-dashed border-gray-300 mx-auto">
-                                No Cover
-                            </div>
+                            <div class="text-muted small">No Cover</div>
                         @endif
                     </td>
-                    <td class="p-4 font-semibold text-gray-900">{{ $book->judul }}</td> [cite: 18, 37]
-                    <td class="p-4 text-gray-600">{{ $book->penulis }}</td> [cite: 20, 37]
-                    <td class="p-4 text-center text-gray-600">{{ $book->tahun_terbit }}</td> [cite: 22, 43]
-                    <td class="p-4 text-center">
-                        <span class="bg-blue-500 text-white px-2.5 py-1 rounded-full text-xs font-bold shadow-sm">
-                            {{ $book->stok }} [cite: 24, 39]
-                        </span>
+                    <td><strong>{{ $book->judul }}</strong></td>
+                    <td>{{ $book->penulis }}</td>
+                    <td class="text-center">{{ $book->tahun_terbit }}</td>
+                    <td class="text-center">
+                        <span class="badge bg-info">{{ $book->stok }}</span>
                     </td>
-                    <td class="p-4 text-center">
-                        <div class="flex justify-center gap-2">
-                            <a href="{{ route('books.edit', $book->id) }}" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-1.5 rounded-md text-sm font-medium transition">
-                                Edit [cite: 44, 82]
-                            </a>
-                            <form action="{{ route('books.destroy', $book->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus?')">
+                    <td class="text-center">
+                        <div class="btn-group">
+                            <a href="{{ route('books.edit', $book->id) }}"
+                               class="btn btn-warning btn-sm">Edit</a>
+
+                            <form action="{{ route('books.destroy', $book->id) }}"
+                                  method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded-md text-sm font-medium transition">
-                                    Hapus [cite: 44]
+                                <button class="btn btn-danger btn-sm"
+                                        onclick="return confirm('Yakin hapus data?')">
+                                    Hapus
                                 </button>
                             </form>
                         </div>
@@ -100,17 +121,144 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7" class="p-12 text-center text-gray-400 italic bg-gray-50">
-                        Belum ada data buku yang ditemukan.
+                    <td colspan="7" class="text-center py-4 text-muted">
+                        Data tidak ditemukan
                     </td>
                 </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
+</div>
 
-    <div class="mt-8">
-        {{ $books->appends(request()->query())->links() }}
+@endsection@extends('layouts.app')
+
+@section('content')
+
+<div class="d-flex justify-content-between mb-3">
+    <h3>Data Book</h3>
+    <a href="{{ route('books.create') }}" class="btn btn-primary">+ Tambah</a>
+</div>
+
+@if(session('success'))
+<div class="alert alert-success">
+    {{ session('success') }}
+</div>
+@endif
+
+{{-- TOTAL DATA --}}
+<div class="alert alert-info">
+    Total Data Book: <strong>{{ $totalBooks }}</strong>
+</div>
+
+{{-- TOTAL PER CATEGORY --}}
+<div class="card mb-3">
+    <div class="card-body">
+        <h5>Total Book per Category</h5>
+        <ul>
+            @foreach($categories as $category)
+                <li>
+                    {{ $category->nama_kategori }} :
+                    <strong>
+                        {{ $totalPerCategory[$category->id] ?? 0 }}
+                    </strong>
+                </li>
+            @endforeach
+        </ul>
     </div>
 </div>
+
+{{-- FORM SEARCH & FILTER --}}
+<form method="GET" action="{{ route('books.index') }}" class="row mb-3">
+
+    <div class="col-md-4">
+        <input type="text" name="judul" class="form-control"
+               placeholder="Cari Judul..."
+               value="{{ request('judul') }}">
+    </div>
+
+    <div class="col-md-4">
+        <select name="category_id" class="form-select">
+            <option value="">-- Semua Kategori --</option>
+            @foreach($categories as $category)
+                <option value="{{ $category->id }}"
+                    {{ request('category_id') == $category->id ? 'selected' : '' }}>
+                    {{ $category->nama_kategori }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+
+    <div class="col-md-4">
+        <button class="btn btn-primary">Filter</button>
+        <a href="{{ route('books.index') }}" class="btn btn-secondary">Reset</a>
+    </div>
+
+</form>
+
+<div class="card">
+    <div class="card-body">
+
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>No</th>
+                    <th>Cover</th> <!-- ✅ TAMBAHAN -->
+                    <th>Judul</th>
+                    <th>Penulis</th>
+                    <th>Tahun</th>
+                    <th>Stok</th>
+                    <th width="150">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($books as $key => $book)
+                <tr>
+                    <td>{{ $key + 1 }}</td>
+
+                    <!-- ✅ TAMPIL COVER -->
+                    <td>
+                        @if($book->cover)
+                            <img src="{{ asset('cover/'.$book->cover) }}"
+                                 width="60"
+                                 style="height:80px; object-fit:cover;">
+                        @else
+                            -
+                        @endif
+                    </td>
+
+                    <td>{{ $book->judul }}</td>
+                    <td>{{ $book->penulis }}</td>
+                    <td>{{ $book->tahun_terbit }}</td>
+                    <td>
+                        <span class="badge bg-info">{{ $book->stok }}</span>
+                    </td>
+                    <td>
+                        <a href="{{ route('books.edit',$book->id) }}"
+                           class="btn btn-warning btn-sm">Edit</a>
+
+                        <form action="{{ route('books.destroy',$book->id) }}"
+                              method="POST" class="d-inline">
+                            @csrf
+                            @method('DELETE')
+                            <button class="btn btn-danger btn-sm"
+                                onclick="return confirm('Yakin hapus data?')">
+                                Hapus
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="7" class="text-center">
+                        Data tidak ditemukan
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
 @endsection

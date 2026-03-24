@@ -9,12 +9,10 @@ class Category extends Model
 {
     use HasFactory;
 
-    // Pastikan ini sesuai dengan nama kolom di tabel categories database kamu
-    protected $fillable = ['nama_kategori'];
+    // Tambahkan 'deskripsi' ke dalam array fillable agar bisa disimpan ke database
+    protected $fillable = ['nama_kategori', 'deskripsi'];
 
-    /**
-     * Relasi ke Model Book (Satu kategori memiliki banyak buku)
-     */
+    // Relasi: Satu kategori memiliki BANYAK buku
     public function books()
     {
         return $this->hasMany(Book::class);

@@ -2,14 +2,19 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BookController;
-use App\Http\Controllers\CategoryController; // Tambahkan ini
+use App\Http\Controllers\CategoryController;
+use App\Models\Book;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
 
 Route::get('/', function () {
-    return view('welcome');
+    $books = Book::latest()->get(); // ambil data buku
+    return view('home', compact('books')); // kirim ke home.blade.php
 });
 
-// Rute untuk Books
 Route::resource('books', BookController::class);
-
-// Tambahkan Rute untuk Categories
 Route::resource('categories', CategoryController::class);

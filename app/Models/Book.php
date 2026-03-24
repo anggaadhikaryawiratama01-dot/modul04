@@ -2,17 +2,20 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Book extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'category_id',
         'judul',
         'penulis',
         'tahun_terbit',
         'stok',
-        'cover', // Tambahkan ini untuk mengizinkan penyimpanan nama file gambar
+        'cover' // ✅ tambahin ini
     ];
 
     public function category()

@@ -2,73 +2,68 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category; // Tambahkan ini agar bisa memanggil database
 use Illuminate\Http\Request;
+use App\Models\Category;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class CategoryController extends Controller
 {
-    /**
-     * Menampilkan daftar kategori.
-     */
-    public function index()
+    public function index(): View
     {
-        $categories = Category::all();
-        // Pastikan kamu punya file resources/views/categories/index.blade.php
+        $categories = Category::withCount('books')->get();
         return view('categories.index', compact('categories'));
     }
 
-    /**
-     * Menampilkan form tambah kategori.
-     */
-    public function create()
+    public function create(): View
     {
         return view('categories.create');
     }
 
-    /**
-     * Menyimpan kategori baru ke database.
-     */
-   public function store(Request $request)
-{
-    $request->validate([
-        'nama_kategori' => 'required|string|max:255',
-    ]);
-
-    // Ini akan mengambil 'nama_kategori' dari form dan menyimpannya
-    Category::create($request->only('nama_kategori'));
-
-    return redirect()->route('categories.index')->with('success', 'Kategori berhasil ditambahkan!');
-}
-
-    /**
-     * Menampilkan form edit.
-     */
-    public function edit(Category $category)
+    public function store(Request $request): RedirectResponse
     {
+        $request->validate([
+            'nama_kategori' => 'required',
+            'deskripsi'     => 'required' // Menangani error Field 'deskripsi' doesn't have a default value
+        ]);
+
+        Category::create($request->all());
+
+        return redirect()->route('categories.index')
+            ->with('success', 'Kategori berhasil ditambahkan');
+    }
+
+    public function show($id)
+    {
+        // Tidak dipakai
+    }
+
+    public function edit($id): View
+    {
+        $category = Category::findOrFail($id);
         return view('categories.edit', compact('category'));
     }
 
-    /**
-     * Memperbarui data kategori.
-     */
-    public function update(Request $request, Category $category)
+    public function update(Request $request, $id): RedirectResponse
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'nama_kategori' => 'required',
+            'deskripsi'     => 'required'
         ]);
 
-        $category->update($request->only('name'));
+        $category = Category::findOrFail($id);
+        $category->update($request->all());
 
-        return redirect()->route('categories.index')->with('success', 'Kategori berhasil diperbarui!');
+        return redirect()->route('categories.index')
+            ->with('success', 'Kategori berhasil diupdate');
     }
 
-    /**
-     * Menghapus kategori.
-     */
-    public function destroy(Category $category)
+    public function destroy($id): RedirectResponse
     {
+        $category = Category::findOrFail($id);
         $category->delete();
 
-        return redirect()->route('categories.index')->with('success', 'Kategori berhasil dihapus!');
+        return redirect()->route('categories.index')
+            ->with('success', 'Kategori berhasil dihapus');
     }
 }
