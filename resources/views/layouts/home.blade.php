@@ -2,6 +2,7 @@
 
 @section('content')
 
+{{-- Hero Section --}}
 <div class="relative w-full h-[450px] overflow-hidden">
     <div class="absolute inset-0 bg-cover bg-center"
          style="background-image: url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2000');">
@@ -23,6 +24,7 @@
     </div>
 </div>
 
+{{-- Collection Section --}}
 <div id="collection" class="container mx-auto px-6 py-16">
     <div class="flex justify-between items-end mb-12">
         <div>
@@ -36,16 +38,18 @@
         @forelse($books as $book)
         <div class="group bg-white rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-500 overflow-hidden border border-gray-100">
             <div class="relative overflow-hidden h-[300px]">
+                {{-- Cek Cover --}}
                 @if($book->cover && file_exists(public_path('cover/'.$book->cover)))
                     <img src="{{ asset('cover/'.$book->cover) }}"
                          alt="{{ $book->judul }}"
                          class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                 @else
                     <div class="w-full h-full bg-gray-200 flex items-center justify-center">
-                        <span class="text-gray-400">No Cover</span>
+                        <span class="text-gray-400 italic">No Cover</span>
                     </div>
                 @endif
 
+                {{-- Badge Kategori --}}
                 @if($book->category)
                 <div class="absolute top-4 left-4">
                     <span class="bg-white/90 backdrop-blur-sm text-gray-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
@@ -71,5 +75,4 @@
         @endforelse
     </div>
 </div>
-
 @endsection

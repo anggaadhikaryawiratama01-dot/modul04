@@ -1,118 +1,77 @@
 @extends('layouts.app')
 
 @section('content')
+<div class="container mx-auto px-6 py-8">
+    {{-- Header Section --}}
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-3xl font-bold text-gray-800 tracking-tight">Data Buku</h2>
+        <a href="{{ route('books.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-semibold transition duration-300 shadow-md flex items-center">
+            <span class="mr-2">+</span> Tambah
+        </a>
+    </div>
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h3>Data Book</h3>
-    <a href="{{ route('books.create') }}" class="btn btn-primary">+ Tambah</a>
-</div>
+    @if(session('success'))
+    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6" role="alert">
+        <span class="block sm:inline">{{ session('success') }}</span>
+    </div>
+    @endif
 
-@if(session('success'))
-<div class="alert alert-success alert-dismissible fade show" role="alert">
-    {{ session('success') }}
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-</div>
-@endif
-
-<div class="row mb-3">
-    {{-- TOTAL DATA --}}
-    <div class="col-md-4">
-        <div class="alert alert-info h-100 mb-0">
-            Total Data Book: <strong>{{ $totalBooks }}</strong>
+    {{-- Stats Cards (Sesuai Gambar Referensi) --}}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-blue-600 rounded-lg p-6 shadow-sm border-l-8 border-blue-800">
+            <p class="text-blue-100 text-sm font-medium uppercase tracking-wider">Total Data Book</p>
+            <h3 class="text-4xl font-bold text-white mt-1">{{ $books->count() }}</h3>
+        </div>
+        <div class="bg-green-600 rounded-lg p-6 shadow-sm border-l-8 border-green-800">
+            <p class="text-green-100 text-sm font-medium uppercase tracking-wider">Total Stok Tersedia</p>
+            <h3 class="text-4xl font-bold text-white mt-1">{{ $books->sum('stok') }}</h3>
         </div>
     </div>
 
-    {{-- TOTAL PER CATEGORY --}}
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-body py-2">
-                <h6 class="card-title mb-1">Total Book per Category:</h6>
-                <div class="d-flex flex-wrap gap-3">
-                    @foreach($categories as $category)
-                        <span class="badge bg-light text-dark border">
-                            {{ $category->nama_kategori }}:
-                            <strong>{{ $totalPerCategory[$category->id] ?? 0 }}</strong>
-                        </span>
-                    @endforeach
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-{{-- FORM SEARCH & FILTER --}}
-<div class="card mb-3">
-    <div class="card-body">
-        <form method="GET" action="{{ route('books.index') }}" class="row g-2">
-            <div class="col-md-5">
-                <input type="text" name="judul" class="form-control"
-                       placeholder="Cari Judul..."
-                       value="{{ request('judul') }}">
-            </div>
-            <div class="col-md-4">
-                <select name="category_id" class="form-select">
-                    <option value="">-- Semua Kategori --</option>
-                    @foreach($categories as $category)
-                        <option value="{{ $category->id }}"
-                            {{ request('category_id') == $category->id ? 'selected' : '' }}>
-                            {{ $category->nama_kategori }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-md-3 d-flex gap-1">
-                <button class="btn btn-primary w-100">Filter</button>
-                <a href="{{ route('books.index') }}" class="btn btn-secondary w-100">Reset</a>
-            </div>
-        </form>
-    </div>
-</div>
-
-<div class="card shadow-sm">
-    <div class="card-body p-0">
-        <table class="table table-hover table-bordered mb-0">
-            <thead class="table-dark">
-                <tr>
-                    <th class="text-center" width="50">No</th>
-                    <th class="text-center" width="100">Cover</th>
-                    <th>Judul</th>
-                    <th>Penulis</th>
-                    <th class="text-center">Tahun</th>
-                    <th class="text-center">Stok</th>
-                    <th class="text-center" width="160">Aksi</th>
+    {{-- Table Section --}}
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-gray-800 text-white uppercase text-sm leading-normal">
+                    <th class="py-4 px-6 font-bold w-16 text-center">No</th>
+                    <th class="py-4 px-6 font-bold text-center">Cover</th>
+                    <th class="py-4 px-6 font-bold">Judul</th>
+                    <th class="py-4 px-6 font-bold">Penulis</th>
+                    <th class="py-4 px-6 font-bold text-center">Tahun</th>
+                    <th class="py-4 px-6 font-bold text-center">Stok</th>
+                    <th class="py-4 px-6 font-bold text-center">Aksi</th>
                 </tr>
             </thead>
-            <tbody class="align-middle">
+            <tbody class="text-gray-700 text-sm">
                 @forelse($books as $key => $book)
-                <tr>
-                    <td class="text-center">{{ $key + 1 }}</td>
-                    <td class="text-center">
-                        @if($book->cover)
-                            <img src="{{ asset('cover/'.$book->cover) }}"
-                                 width="60"
-                                 class="rounded shadow-sm"
-                                 style="height:80px; object-fit:cover;">
-                        @else
-                            <div class="text-muted small">No Cover</div>
-                        @endif
+                <tr class="border-b border-gray-200 hover:bg-gray-50 transition duration-200">
+                    <td class="py-4 px-6 text-center font-bold">{{ $key + 1 }}</td>
+                    <td class="py-4 px-6 text-center">
+                        <div class="flex justify-center">
+                            @if($book->cover && file_exists(public_path('cover/'.$book->cover)))
+                                <img src="{{ asset('cover/'.$book->cover) }}" class="w-12 h-16 object-cover rounded shadow-sm border border-gray-200">
+                            @else
+                                <div class="w-12 h-16 bg-gray-200 flex items-center justify-center rounded text-[10px] text-gray-400 italic">No Cover</div>
+                            @endif
+                        </div>
                     </td>
-                    <td><strong>{{ $book->judul }}</strong></td>
-                    <td>{{ $book->penulis }}</td>
-                    <td class="text-center">{{ $book->tahun_terbit }}</td>
-                    <td class="text-center">
-                        <span class="badge bg-info">{{ $book->stok }}</span>
+                    <td class="py-4 px-6 font-bold text-gray-900">{{ $book->judul }}</td>
+                    <td class="py-4 px-6 font-medium text-gray-600">{{ $book->penulis }}</td>
+                    <td class="py-4 px-6 text-center text-gray-500">{{ $book->tahun_terbit }}</td>
+                    <td class="py-4 px-6 text-center">
+                        <span class="bg-blue-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
+                            {{ $book->stok }}
+                        </span>
                     </td>
-                    <td class="text-center">
-                        <div class="btn-group">
-                            <a href="{{ route('books.edit', $book->id) }}"
-                               class="btn btn-warning btn-sm">Edit</a>
-
-                            <form action="{{ route('books.destroy', $book->id) }}"
-                                  method="POST" class="d-inline">
+                    <td class="py-4 px-6 text-center">
+                        <div class="flex item-center justify-center space-x-2">
+                            <a href="{{ route('books.edit', $book->id) }}" class="bg-yellow-400 hover:bg-yellow-500 text-white text-xs font-bold py-1.5 px-3 rounded shadow transition duration-300">
+                                Edit
+                            </a>
+                            <form action="{{ route('books.destroy', $book->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus?')">
                                 @csrf
                                 @method('DELETE')
-                                <button class="btn btn-danger btn-sm"
-                                        onclick="return confirm('Yakin hapus data?')">
+                                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white text-xs font-bold py-1.5 px-3 rounded shadow transition duration-300">
                                     Hapus
                                 </button>
                             </form>
@@ -121,144 +80,11 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7" class="text-center py-4 text-muted">
-                        Data tidak ditemukan
-                    </td>
+                    <td colspan="7" class="py-10 text-center text-gray-400 italic font-medium">Belum ada data buku yang tersedia.</td>
                 </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
 </div>
-
-@endsection@extends('layouts.app')
-
-@section('content')
-
-<div class="d-flex justify-content-between mb-3">
-    <h3>Data Book</h3>
-    <a href="{{ route('books.create') }}" class="btn btn-primary">+ Tambah</a>
-</div>
-
-@if(session('success'))
-<div class="alert alert-success">
-    {{ session('success') }}
-</div>
-@endif
-
-{{-- TOTAL DATA --}}
-<div class="alert alert-info">
-    Total Data Book: <strong>{{ $totalBooks }}</strong>
-</div>
-
-{{-- TOTAL PER CATEGORY --}}
-<div class="card mb-3">
-    <div class="card-body">
-        <h5>Total Book per Category</h5>
-        <ul>
-            @foreach($categories as $category)
-                <li>
-                    {{ $category->nama_kategori }} :
-                    <strong>
-                        {{ $totalPerCategory[$category->id] ?? 0 }}
-                    </strong>
-                </li>
-            @endforeach
-        </ul>
-    </div>
-</div>
-
-{{-- FORM SEARCH & FILTER --}}
-<form method="GET" action="{{ route('books.index') }}" class="row mb-3">
-
-    <div class="col-md-4">
-        <input type="text" name="judul" class="form-control"
-               placeholder="Cari Judul..."
-               value="{{ request('judul') }}">
-    </div>
-
-    <div class="col-md-4">
-        <select name="category_id" class="form-select">
-            <option value="">-- Semua Kategori --</option>
-            @foreach($categories as $category)
-                <option value="{{ $category->id }}"
-                    {{ request('category_id') == $category->id ? 'selected' : '' }}>
-                    {{ $category->nama_kategori }}
-                </option>
-            @endforeach
-        </select>
-    </div>
-
-    <div class="col-md-4">
-        <button class="btn btn-primary">Filter</button>
-        <a href="{{ route('books.index') }}" class="btn btn-secondary">Reset</a>
-    </div>
-
-</form>
-
-<div class="card">
-    <div class="card-body">
-
-        <table class="table table-bordered table-striped">
-            <thead class="table-dark">
-                <tr>
-                    <th>No</th>
-                    <th>Cover</th> <!-- ✅ TAMBAHAN -->
-                    <th>Judul</th>
-                    <th>Penulis</th>
-                    <th>Tahun</th>
-                    <th>Stok</th>
-                    <th width="150">Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($books as $key => $book)
-                <tr>
-                    <td>{{ $key + 1 }}</td>
-
-                    <!-- ✅ TAMPIL COVER -->
-                    <td>
-                        @if($book->cover)
-                            <img src="{{ asset('cover/'.$book->cover) }}"
-                                 width="60"
-                                 style="height:80px; object-fit:cover;">
-                        @else
-                            -
-                        @endif
-                    </td>
-
-                    <td>{{ $book->judul }}</td>
-                    <td>{{ $book->penulis }}</td>
-                    <td>{{ $book->tahun_terbit }}</td>
-                    <td>
-                        <span class="badge bg-info">{{ $book->stok }}</span>
-                    </td>
-                    <td>
-                        <a href="{{ route('books.edit',$book->id) }}"
-                           class="btn btn-warning btn-sm">Edit</a>
-
-                        <form action="{{ route('books.destroy',$book->id) }}"
-                              method="POST" class="d-inline">
-                            @csrf
-                            @method('DELETE')
-                            <button class="btn btn-danger btn-sm"
-                                onclick="return confirm('Yakin hapus data?')">
-                                Hapus
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="7" class="text-center">
-                        Data tidak ditemukan
-                    </td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-
-    </div>
-</div>
-
 @endsection

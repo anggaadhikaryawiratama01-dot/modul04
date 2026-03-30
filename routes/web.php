@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Models\Book;
 
@@ -11,21 +12,34 @@ use App\Models\Book;
 |--------------------------------------------------------------------------
 */
 
-/**
- * Route Halaman Utama (Landing Page)
- * Mengambil data buku beserta kategorinya untuk ditampilkan di home.blade.php
- */
+// --- Rute Autentikasi (Guest) ---
+// Mengarahkan '/' langsung ke halaman login
 Route::get('/', function () {
-    // Eager loading 'category' agar tidak error saat memanggil $book->category->name
-    $books = Book::with('category')->latest()->get();
-
-    // Mengarahkan ke file resources/views/layouts/home.blade.php
-    return view('layouts.home', compact('books'));
+    return redirect()->route('login');
 });
 
-/**
- * Route Resource untuk CRUD Buku dan Kategori
- * Menggunakan BookController dan CategoryController
- */
-Route::resource('books', BookController::class);
-Route::resource('categories', CategoryController::class);
+// Menambahkan rute GET untuk /login agar tidak "Method Not Allowed"
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login')->middleware('guest');
+Route::post('/login', [AuthController::class, 'login'])->middleware('guest');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// --- Rute Terproteksi (Auth) ---
+Route::middleware('auth')->group(function () {
+
+    /**
+     * Route Halaman Utama (Dashboard/Home)
+     */
+    Route::get('/home', function () {
+        // Eager loading 'category' untuk optimasi query
+        $books = Book::with('category')->latest()->get();
+
+        return view('layouts.home', compact('books'));
+    })->name('home');
+
+    /**
+     * Route Resource untuk CRUD Buku dan Kategori
+     */
+    Route::resource('books', BookController::class);
+    Route::resource('categories', CategoryController::class);
+
+});
